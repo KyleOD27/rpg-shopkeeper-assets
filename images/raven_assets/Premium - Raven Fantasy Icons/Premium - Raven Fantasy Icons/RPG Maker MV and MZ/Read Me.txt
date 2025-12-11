@@ -1,0 +1,1 @@
+the 32x32 pack is the most complete one although some people found issues with it when adding it to the rpg maker engine, like black screens or other issues, on this case, I made a second file, "IconSet", which is smaller, and should work on most PCs
