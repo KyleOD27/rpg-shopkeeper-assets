@@ -2,14 +2,264 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>RPG Shopkeeper Assets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPG Shopkeeper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Press Start 2P', monospace;
+      background-color: #1a0e2e;
+      color: #f0e6d0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.08) 2px,
+        rgba(0, 0, 0, 0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Starfield background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(1px 1px at 10% 15%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1px 1px at 25% 35%, #d4a44c 50%, transparent 50%),
+        radial-gradient(1px 1px at 40% 8%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1px 1px at 55% 42%, #f0e6d080 50%, transparent 50%),
+        radial-gradient(1px 1px at 70% 20%, #d4a44c 50%, transparent 50%),
+        radial-gradient(1px 1px at 85% 55%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1px 1px at 15% 60%, #d4a44c80 50%, transparent 50%),
+        radial-gradient(1px 1px at 30% 75%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1px 1px at 50% 65%, #d4a44c 50%, transparent 50%),
+        radial-gradient(1px 1px at 65% 80%, #f0e6d080 50%, transparent 50%),
+        radial-gradient(1px 1px at 80% 10%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1px 1px at 92% 38%, #d4a44c80 50%, transparent 50%),
+        radial-gradient(1px 1px at 5% 88%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1px 1px at 48% 92%, #d4a44c 50%, transparent 50%),
+        radial-gradient(1px 1px at 75% 48%, #f0e6d080 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 20% 50%, #d4a44c 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 60% 25%, #f0e6d0 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 88% 72%, #d4a44c80 50%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      color: #d4a44c;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow:
+        0 0 10px rgba(212, 164, 76, 0.5),
+        2px 2px 0 #1a0e2e;
+      line-height: 1.6;
+    }
+
+    .title .star {
+      color: #f0e6d0;
+      animation: twinkle 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .hero-image {
+      width: 220px;
+      height: auto;
+      image-rendering: pixelated;
+      margin-bottom: 1.5rem;
+      filter: drop-shadow(0 0 20px rgba(139, 34, 82, 0.4));
+      transition: transform 0.2s ease;
+    }
+
+    .hero-image:hover {
+      transform: scale(1.03);
+    }
+
+    /* Pixel-art dialogue box using box-shadow borders */
+    .menu-panel {
+      width: 100%;
+      background-color: #2d1b4e;
+      padding: 1.5rem;
+      position: relative;
+      /* Chunky pixel border using box-shadow */
+      box-shadow:
+        /* Outer border */
+        -4px 0 0 0 #d4a44c,
+        4px 0 0 0 #d4a44c,
+        0 -4px 0 0 #d4a44c,
+        0 4px 0 0 #d4a44c,
+        /* Corners */
+        -4px -4px 0 0 #d4a44c,
+        4px -4px 0 0 #d4a44c,
+        -4px 4px 0 0 #d4a44c,
+        4px 4px 0 0 #d4a44c,
+        /* Second border layer */
+        -8px 0 0 0 #3d3456,
+        8px 0 0 0 #3d3456,
+        0 -8px 0 0 #3d3456,
+        0 8px 0 0 #3d3456,
+        -8px -8px 0 0 #3d3456,
+        8px -8px 0 0 #3d3456,
+        -8px 8px 0 0 #3d3456,
+        8px 8px 0 0 #3d3456,
+        /* Glow */
+        0 0 30px rgba(139, 34, 82, 0.3);
+      margin: 0 12px;
+    }
+
+    .menu-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .menu-item a {
+      display: block;
+      padding: 0.9rem 1rem;
+      color: #f0e6d0;
+      text-decoration: none;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      line-height: 1.6;
+      transition: background-color 0.1s, color 0.1s, text-shadow 0.1s;
+      position: relative;
+    }
+
+    .menu-item a::before {
+      content: '>';
+      margin-right: 0.75rem;
+      color: #d4a44c;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .menu-item a:hover,
+    .menu-item a:focus {
+      background-color: #3d3456;
+      color: #d4a44c;
+      text-shadow: 0 0 8px rgba(212, 164, 76, 0.5);
+      outline: none;
+    }
+
+    .menu-item a:hover::before,
+    .menu-item a:focus::before {
+      opacity: 1;
+    }
+
+    /* Active/click effect */
+    .menu-item a:active {
+      background-color: #d4a44c;
+      color: #1a0e2e;
+      text-shadow: none;
+    }
+
+    .menu-item a:active::before {
+      color: #1a0e2e;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      padding-bottom: 1.5rem;
+      font-size: 0.5rem;
+      color: #3d3456;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 480px) {
+      .title {
+        font-size: 0.9rem;
+      }
+
+      .hero-image {
+        width: 180px;
+      }
+
+      .menu-item a {
+        font-size: 0.6rem;
+        padding: 0.8rem 0.75rem;
+      }
+
+      .menu-panel {
+        padding: 1.2rem;
+      }
+
+      .footer {
+        font-size: 0.45rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>🧙 RPG Shopkeeper Assets</h1>
-  <p>This is a public image hosting repo for use with the app.</p>
-  <p><a href="guide.html">Detailed Prompt Guide</a></p>
-  <p><a href="quickstart.html">Quick Start Guide</a></p>
-  <p><a href="discord.html">Add to Discord</a></p>
-  <p><a href="whatsapp.html">WhatsApp</a></p>
+  <div class="container">
+    <h1 class="title">
+      <span class="star">&#10022;</span> RPG Shopkeeper <span class="star">&#10022;</span>
+    </h1>
+
+    <img
+      src="images/rpg_shopkeeper_no_background.png"
+      alt="RPG Shopkeeper - a pixel art witch with purple hair, glasses, and a dark cloak"
+      class="hero-image"
+    >
+
+    <nav class="menu-panel" role="navigation" aria-label="Main menu">
+      <ul class="menu-list">
+        <li class="menu-item"><a href="guide.html">Detailed Prompt Guide</a></li>
+        <li class="menu-item"><a href="quickstart.html">Quick Start Guide</a></li>
+        <li class="menu-item"><a href="discord.html">Add to Discord</a></li>
+        <li class="menu-item"><a href="whatsapp.html">WhatsApp</a></li>
+      </ul>
+    </nav>
+
+    <footer class="footer">rpg-shop.uk</footer>
+  </div>
 </body>
 </html>
