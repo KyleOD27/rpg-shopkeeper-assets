@@ -16,7 +16,7 @@
 
     body {
       font-family: 'Press Start 2P', monospace;
-      background-color: #1a0e2e;
+      background-color: #1a1029;
       color: #f0e6d0;
       min-height: 100vh;
       display: flex;
@@ -94,7 +94,7 @@
       margin-bottom: 1.5rem;
       text-shadow:
         0 0 10px rgba(212, 164, 76, 0.5),
-        2px 2px 0 #1a0e2e;
+        2px 2px 0 #1a1029;
       line-height: 1.6;
     }
 
@@ -113,7 +113,7 @@
       height: auto;
       image-rendering: pixelated;
       margin-bottom: 1.5rem;
-      filter: drop-shadow(0 0 20px rgba(139, 34, 82, 0.4));
+      filter: drop-shadow(0 0 20px rgba(130, 79, 160, 0.4));
       transition: transform 0.2s ease;
     }
 
@@ -124,7 +124,7 @@
     /* Pixel-art dialogue box using box-shadow borders */
     .menu-panel {
       width: 100%;
-      background-color: #2d1b4e;
+      background-color: #2b1d4e;
       padding: 1.5rem;
       position: relative;
       /* Chunky pixel border using box-shadow */
@@ -140,16 +140,16 @@
         -4px 4px 0 0 #d4a44c,
         4px 4px 0 0 #d4a44c,
         /* Second border layer */
-        -8px 0 0 0 #3d3456,
-        8px 0 0 0 #3d3456,
-        0 -8px 0 0 #3d3456,
-        0 8px 0 0 #3d3456,
-        -8px -8px 0 0 #3d3456,
-        8px -8px 0 0 #3d3456,
-        -8px 8px 0 0 #3d3456,
-        8px 8px 0 0 #3d3456,
+        -8px 0 0 0 #4a3568,
+        8px 0 0 0 #4a3568,
+        0 -8px 0 0 #4a3568,
+        0 8px 0 0 #4a3568,
+        -8px -8px 0 0 #4a3568,
+        8px -8px 0 0 #4a3568,
+        -8px 8px 0 0 #4a3568,
+        8px 8px 0 0 #4a3568,
         /* Glow */
-        0 0 30px rgba(139, 34, 82, 0.3);
+        0 0 30px rgba(130, 79, 160, 0.3);
       margin: 0 12px;
     }
 
@@ -191,7 +191,7 @@
 
     .menu-item a:hover,
     .menu-item a:focus {
-      background-color: #3d3456;
+      background-color: #4a3568;
       color: #d4a44c;
       text-shadow: 0 0 8px rgba(212, 164, 76, 0.5);
       outline: none;
@@ -205,19 +205,19 @@
     /* Active/click effect */
     .menu-item a:active {
       background-color: #d4a44c;
-      color: #1a0e2e;
+      color: #1a1029;
       text-shadow: none;
     }
 
     .menu-item a:active::before {
-      color: #1a0e2e;
+      color: #1a1029;
     }
 
     .footer {
       margin-top: 2rem;
       padding-bottom: 1.5rem;
       font-size: 0.5rem;
-      color: #3d3456;
+      color: #4a3568;
       text-align: center;
       letter-spacing: 2px;
     }
