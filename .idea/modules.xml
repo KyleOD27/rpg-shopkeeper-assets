@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../rpg-shopkeeper-project/.idea/rpg-shopkeeper.iml" filepath="$PROJECT_DIR$/../rpg-shopkeeper-project/.idea/rpg-shopkeeper.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/rpg-shopkeeper-assets.iml" filepath="$PROJECT_DIR$/.idea/rpg-shopkeeper-assets.iml" />
     </modules>
   </component>
