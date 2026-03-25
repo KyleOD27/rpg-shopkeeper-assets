@@ -1,67 +1,123 @@
-# Image Migration Plan: items/ → items_interim/
+# Image Migration Plan: items_interim/ → items/
 
-## Overview
+## Current State (updated 2026-03-25)
 
-Plan for replacing production item images with the new pixel art versions from `images/items_interim/`.
-
----
-
-## Current State
-
-| | `images/items/` (current) | `images/items_interim/` (replacement) |
+| | `images/items/` (production) | `images/items_interim/` (replacement) |
 |---|---|---|
-| Resolution | 1024 × 1024 px | 64 × 64 px |
-| Color depth | 24-bit RGB (full color) | 4-bit indexed (16 colors) |
-| Avg file size | ~949 KB | ~68 KB |
-| Total size | 639 MB | 48 MB |
-| File count | 703 PNG files | 701 PNG files |
-| Format | PNG | PNG |
+| Resolution | 1024 × 1024 px | 64×64 (650 files) or 128×128 (53 files) |
+| Color mode | 24-bit RGB | Palette/indexed 'P' (544 files) or RGBA (159 files) |
+| Total size | 639 MB | 5.5 MB |
+| File count | 703 PNG files | 703 PNG files |
+| Filename match | — | ✅ All 703 filenames match |
 
 ---
 
-## Potential End User Impacts
+## End User Platform Concerns
 
 ### Discord
-- Discord scales images to fit chat width (~400px). A 64×64 image will render at roughly 64px — very small on desktop.
-- Upscaling by Discord may use bilinear interpolation, which **blurs pixel art**. Nearest-neighbor is needed to keep crisp edges.
-- 4-bit indexed color (16 colors) will produce visible **banding and dithering** compared to current full-color images.
+- Displays images up to ~400px wide. A raw 64×64 image renders tiny.
+- Discord's upscaler uses bilinear interpolation → **blurs pixel art**.
+- Indexed palette color can produce banding artifacts.
+- **Fix:** Pre-upscale to 512×512 with nearest-neighbor before upload.
 
 ### WhatsApp
-- WhatsApp **recompresses** images on send, which degrades small images further.
-- 64×64 images may not trigger a proper preview and could appear as tiny thumbnails rather than expanded images.
+- Recompresses images on send, degrading small images further.
+- Images below ~200px may not trigger expanded preview.
+- **Fix:** Same 512×512 upscale resolves this.
 
 ---
 
-## Required Changes Before Swapping
+## Technical Implementation
 
-### 1. Upscale images (critical)
-- Scale from 64×64 to **256×256 or 512×512**
-- Must use **nearest-neighbor interpolation** to preserve pixel art crispness
-- Bilinear or bicubic will cause blurring
+### Step 1 — Normalize and upscale (`process_interim.py`)
 
-### 2. Convert to 24-bit PNG (recommended)
-- Strip the 4-bit indexed palette
-- Ensures correct color rendering across Discord, WhatsApp, and other platforms
+Write a Python script using Pillow that:
 
-### 3. Resolve missing files (2 files)
-- `images/items/` has 2 files not present in `images/items_interim/`
-- These need to either be generated in the new pixel art style or kept from the original set
+1. Iterates all 703 PNGs in `images/items_interim/`
+2. Converts palette mode `'P'` → `'RGBA'` (preserves transparency)
+3. Upscales to **512×512** using `Image.NEAREST` (nearest-neighbor)
+4. Saves output to `images/items_processed/` as 24-bit RGBA PNG
+
+```python
+from PIL import Image
+import os
+
+SRC = "images/items_interim"
+DST = "images/items_processed"
+TARGET = (512, 512)
+
+os.makedirs(DST, exist_ok=True)
+
+for filename in os.listdir(SRC):
+    if not filename.endswith(".png"):
+        continue
+    img = Image.open(os.path.join(SRC, filename))
+    if img.mode == "P":
+        img = img.convert("RGBA")
+    elif img.mode != "RGBA":
+        img = img.convert("RGBA")
+    img = img.resize(TARGET, Image.NEAREST)
+    img.save(os.path.join(DST, filename), "PNG")
+    print(f"  {filename}: {img.size} {img.mode}")
+
+print("Done.")
+```
+
+**Why 512×512:**
+- 8× upscale from 64×64 keeps each source pixel as a crisp 8×8 block
+- 4× upscale from 128×128 images — consistent output
+- Large enough for Discord and WhatsApp previews
+- Still 4× smaller in linear dimension than the current 1024×1024 source
+
+### Step 2 — QA spot check
+
+Before replacing production:
+- Pick ~10 representative images from `items_processed/`
+- Post to Discord and WhatsApp manually and verify they render crisply
+- Check transparency renders correctly (items with transparent backgrounds)
+
+### Step 3 — Replace production images
+
+Once QA passes:
+
+```bash
+# Archive originals (optional but recommended)
+mv images/items images/items_original_backup
+
+# Swap in processed images
+mv images/items_processed images/items
+```
+
+Or overwrite in place if archiving is not needed:
+```bash
+cp images/items_processed/*.png images/items/
+```
+
+### Step 4 — Commit and push
+
+```bash
+git add images/items/
+git commit -m "Replace item images with upscaled pixel art (512×512, nearest-neighbor)"
+git push
+```
 
 ---
 
-## Proposed Migration Steps
+## Open Decisions (needs answer before proceeding)
 
-1. Identify the 2 missing files between directories
-2. Write/run a bulk upscale script (nearest-neighbor, 64→256px or 512px)
-3. Convert all output to 24-bit PNG
-4. QA check a sample on Discord and WhatsApp before full swap
-5. Replace `images/items/` contents with processed images
-6. Commit and push
+| Decision | Options | Recommendation |
+|---|---|---|
+| Target resolution | 256×256 or 512×512 | **512×512** — safe for Discord/WhatsApp, still 4× smaller than originals |
+| Archive originals? | Keep backup or delete | Keep as `items_original_backup/` initially, delete after confirmed working |
+| items_interim status | Are all 703 final? | Confirm before running script — any regenerated files should land in interim first |
 
 ---
 
-## Open Questions
+## Estimated Output
 
-- Target upscale resolution: 256×256 or 512×512?
-- Should originals in `images/items/` be archived or deleted after swap?
-- Are the 701 interim images all final, or are more still being generated?
+| Metric | Value |
+|---|---|
+| Output resolution | 512 × 512 px |
+| Estimated avg file size | ~50–150 KB per image |
+| Estimated total size | ~35–100 MB (vs 639 MB today) |
+| Script runtime | ~1–2 min for 703 files |
