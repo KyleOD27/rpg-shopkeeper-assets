@@ -7,13 +7,13 @@ TARGET = (512, 512)
 ITEM_SIZE = int(512 * 0.70)  # 70% of canvas = ~358px
 
 RARITY_COLORS = {
-    "mundane":   (26,  26,  46),   # dark navy
-    "common":    (45,  45,  45),   # dark grey
-    "uncommon":  (13,  43,  13),   # dark green
-    "rare":      (13,  13,  59),   # dark blue
-    "very_rare": (31,  13,  59),   # dark purple
-    "legendary": (59,  31,   0),   # dark orange
-    "artifact":  (59,   0,   0),   # dark crimson
+    "mundane":   (60,  60,  85),   # muted navy
+    "common":    (85,  85,  85),   # medium grey
+    "uncommon":  (40,  85,  40),   # muted green
+    "rare":      (40,  40, 120),   # muted blue
+    "very_rare": (75,  40, 120),   # muted purple
+    "legendary": (130, 80,  16),   # muted amber
+    "artifact":  (130, 24,  24),   # muted crimson
 }
 DEFAULT_RARITY = "mundane"
 
