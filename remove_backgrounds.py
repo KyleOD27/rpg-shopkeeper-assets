@@ -6,6 +6,7 @@ from collections import deque
 
 ITEMS_DIR = "images/items"
 TOLERANCE = 20  # color distance threshold for flood fill
+SCALE = 0.7     # shrink content to 70% of current size
 
 
 def color_distance(c1, c2):
@@ -46,6 +47,27 @@ def remove_background(path):
     img.save(path)
 
 
+def shrink_content(path):
+    img = Image.open(path).convert("RGBA")
+    canvas_w, canvas_h = img.size
+
+    bbox = img.getbbox()
+    if bbox is None:
+        return  # fully transparent, skip
+
+    content = img.crop(bbox)
+    new_w = max(1, round(content.width * SCALE))
+    new_h = max(1, round(content.height * SCALE))
+    # Use NEAREST to preserve pixel art crispness
+    content = content.resize((new_w, new_h), Image.NEAREST)
+
+    canvas = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    paste_x = (canvas_w - new_w) // 2
+    paste_y = (canvas_h - new_h) // 2
+    canvas.paste(content, (paste_x, paste_y), content)
+    canvas.save(path)
+
+
 files = sorted(os.listdir(ITEMS_DIR))
 total = len(files)
 for i, fname in enumerate(files, 1):
@@ -53,6 +75,7 @@ for i, fname in enumerate(files, 1):
         continue
     path = os.path.join(ITEMS_DIR, fname)
     remove_background(path)
+    shrink_content(path)
     if i % 50 == 0 or i == total:
         print(f"  {i}/{total} done")
 
