@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPG Shopkeeper — Web Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:        #0f0a1a;
+      --surface:   #1a1228;
+      --border:    rgba(212, 164, 76, 0.15);
+      --gold:      #d4a44c;
+      --gold-dim:  rgba(212, 164, 76, 0.08);
+      --text:      #e8dcc8;
+      --text-dim:  #8a7a9e;
+      --purple-glow: rgba(100, 50, 140, 0.12);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+    }
+
+    /* Background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 900px; height: 900px;
+      background: radial-gradient(ellipse, var(--purple-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .chat-shell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 680px;
+      margin: 0 auto;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.25rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .topbar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      object-fit: cover;
+    }
+
+    .topbar-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+    }
+
+    .topbar-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .session-info {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-style: italic;
+      display: none; /* shown once logged in */
+    }
+
+    .btn-reset {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid rgba(212,164,76,0.12);
+      border-radius: 3px;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none; /* shown once logged in */
+    }
+
+    .btn-reset:hover { color: var(--gold); border-color: rgba(212,164,76,0.4); }
+
+    .btn-home {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .btn-home:hover { color: var(--gold); }
+
+    /* ── Message area ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scroll-behavior: smooth;
+    }
+
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: rgba(212,164,76,0.2); border-radius: 2px; }
+
+    /* ── Bubbles ── */
+    .bubble-row {
+      display: flex;
+      gap: 0.6rem;
+      max-width: 88%;
+    }
+
+    .bubble-row.shopkeeper { align-self: flex-start; }
+    .bubble-row.player     { align-self: flex-end; flex-direction: row-reverse; }
+
+    .bubble-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      align-self: flex-end;
+    }
+
+    .bubble {
+      padding: 0.7rem 0.95rem;
+      border-radius: 4px;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .bubble-row.shopkeeper .bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 1px;
+      color: var(--text);
+    }
+
+    .bubble-row.player .bubble {
+      background: var(--gold-dim);
+      border: 1px solid rgba(212,164,76,0.2);
+      border-bottom-right-radius: 1px;
+      color: var(--text);
+    }
+
+    /* Narration italics (_text_) */
+    .bubble em {
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    /* Item images inside bubbles */
+    .bubble-image {
+      display: block;
+      max-width: 180px;
+      max-height: 180px;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--border);
+    }
+
+    /* Typing indicator */
+    .typing-indicator .bubble {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 0.75rem 0.95rem;
+    }
+
+    .typing-dot {
+      width: 6px; height: 6px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40%            { opacity: 1;   transform: scale(1); }
+    }
+
+    /* Ornamental divider inside chat */
+    .chat-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      align-self: center;
+      width: 60%;
+      opacity: 0.35;
+    }
+
+    .chat-divider::before, .chat-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .chat-divider-gem {
+      width: 5px; height: 5px;
+      background: var(--gold);
+      transform: rotate(45deg);
+    }
+
+    /* ── Input bar ── */
+    .input-bar {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.85rem 1rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    #msg-input {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 1rem;
+      padding: 0.55rem 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+      min-height: 42px;
+      max-height: 120px;
+    }
+
+    #msg-input:focus { border-color: rgba(212,164,76,0.4); }
+    #msg-input::placeholder { color: var(--text-dim); font-style: italic; }
+
+    #send-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.07em;
+      background: var(--gold-dim);
+      border: 1px solid rgba(212,164,76,0.25);
+      border-radius: 3px;
+      color: var(--gold);
+      padding: 0 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    #send-btn:hover  { background: rgba(212,164,76,0.16); border-color: rgba(212,164,76,0.5); }
+    #send-btn:active { background: rgba(212,164,76,0.22); }
+    #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .bubble { font-size: 0.95rem; }
+      .topbar-name { font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="chat-shell">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <img
+        class="topbar-avatar"
+        src="images/rpg-shopkeeper-profile/swisstransfer_450f5ac8-a984-4dee-8259-6a361dbc7382/Shopkeeper_Kyle_V2_FINAL_HD_TRANSPARENT.png"
+        alt="Shopkeeper"
+      >
+      <div>
+        <div class="topbar-name">RPG Shopkeeper</div>
+        <div class="topbar-sub" id="session-label">Web Chat</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="session-info" id="session-info"></span>
+      <button class="btn-reset" id="btn-reset" title="Reset session">Reset</button>
+      <a class="btn-home" href="index.html">Home</a>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <main class="messages" id="messages" aria-live="polite" aria-label="Chat messages"></main>
+
+  <!-- Input -->
+  <footer class="input-bar">
+    <textarea
+      id="msg-input"
+      placeholder="Speak your mind, adventurer…"
+      rows="1"
+      autocomplete="off"
+      spellcheck="true"
+    ></textarea>
+    <button id="send-btn">Send</button>
+  </footer>
+
+</div>
+
+<script>
+  // ── Configuration ─────────────────────────────────────────────────────────
+  // Change this to match your server address once deployed.
+  const API_URL = 'https://api.rpg-shop.uk';
+
+  // ── Session identity ──────────────────────────────────────────────────────
+  function getOrCreateWebId() {
+    let id = localStorage.getItem('rpg_web_id');
+    if (!id) {
+      id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+      localStorage.setItem('rpg_web_id', id);
+    }
+    return id;
+  }
+
+  const webId = getOrCreateWebId();
+
+  // ── DOM references ────────────────────────────────────────────────────────
+  const messagesEl  = document.getElementById('messages');
+  const inputEl     = document.getElementById('msg-input');
+  const sendBtn     = document.getElementById('send-btn');
+  const resetBtn    = document.getElementById('btn-reset');
+  const sessionInfo = document.getElementById('session-info');
+  const sessionLabel= document.getElementById('session-label');
+  let   sessionActive = false;
+
+  // ── Format shopkeeper text ────────────────────────────────────────────────
+  // Convert _italic narration_ to <em>narration</em>
+  function formatText(text) {
+    // Escape HTML
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // Convert _text_ to <em>text</em>
+    return escaped.replace(/_(.*?)_/g, '<em>$1</em>');
+  }
+
+  // ── Append a message bubble ───────────────────────────────────────────────
+  function appendMessage(text, sender, mediaUrl) {
+    const row = document.createElement('div');
+    row.className = `bubble-row ${sender}`;
+
+    if (sender === 'shopkeeper') {
+      const avatar = document.createElement('img');
+      avatar.className = 'bubble-avatar';
+      avatar.src = 'images/rpg-shopkeeper-profile/swisstransfer_450f5ac8-a984-4dee-8259-6a361dbc7382/Shopkeeper_Kyle_V2_FINAL_HD_TRANSPARENT.png';
+      avatar.alt = 'Shopkeeper';
+      row.appendChild(avatar);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    if (mediaUrl) {
+      const img = document.createElement('img');
+      img.className = 'bubble-image';
+      img.src = mediaUrl;
+      img.alt = 'Item image';
+      bubble.appendChild(img);
+    }
+
+    const textNode = document.createElement('span');
+    textNode.innerHTML = formatText(text);
+    bubble.appendChild(textNode);
+
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // ── Ornamental divider ────────────────────────────────────────────────────
+  function appendDivider() {
+    const div = document.createElement('div');
+    div.className = 'chat-divider';
+    div.innerHTML = '<span class="chat-divider-gem"></span>';
+    messagesEl.appendChild(div);
+  }
+
+  // ── Typing indicator ─────────────────────────────────────────────────────
+  let typingEl = null;
+
+  function showTyping() {
+    if (typingEl) return;
+    const row = document.createElement('div');
+    row.className = 'bubble-row shopkeeper typing-indicator';
+    row.innerHTML = `
+      <img class="bubble-avatar"
+        src="images/rpg-shopkeeper-profile/swisstransfer_450f5ac8-a984-4dee-8259-6a361dbc7382/Shopkeeper_Kyle_V2_FINAL_HD_TRANSPARENT.png"
+        alt="Shopkeeper">
+      <div class="bubble">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>`;
+    messagesEl.appendChild(row);
+    typingEl = row;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function hideTyping() {
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+  }
+
+  // ── Send a message ────────────────────────────────────────────────────────
+  async function sendMessage(text) {
+    if (!text.trim()) return;
+
+    appendMessage(text, 'player');
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch(`${API_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ web_id: webId, message: text })
+      });
+
+      hideTyping();
+
+      if (!res.ok) {
+        appendMessage('The shopkeeper seems distracted… (server error ' + res.status + ')', 'shopkeeper');
+        return;
+      }
+
+      const data = await res.json();
+      appendMessage(data.body || '…', 'shopkeeper', data.media_url || null);
+
+      // Detect when setup is complete (character name mentioned in response)
+      if (!sessionActive && data.body && (
+        data.body.includes('ready to shop') ||
+        data.body.includes('Welcome back') ||
+        data.body.includes("you're in") ||
+        data.body.includes('your adventure')
+      )) {
+        activateSession();
+      }
+
+    } catch (err) {
+      hideTyping();
+      appendMessage('_The connection to the shop seems unstable…_\n\nCould not reach the server. Please check your connection.', 'shopkeeper');
+    } finally {
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+
+  // ── Show session controls once logged in ─────────────────────────────────
+  function activateSession() {
+    sessionActive = true;
+    resetBtn.style.display = 'block';
+    sessionInfo.style.display = 'inline';
+    sessionInfo.textContent = 'web session';
+    sessionLabel.textContent = 'Connected';
+  }
+
+  // ── Reset session ─────────────────────────────────────────────────────────
+  resetBtn.addEventListener('click', async () => {
+    if (!confirm('Reset your session? You will need to log in again.')) return;
+    localStorage.removeItem('rpg_web_id');
+    location.reload();
+  });
+
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+  });
+
+  // ── Send on Enter (Shift+Enter for newline) ───────────────────────────────
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage(inputEl.value);
+    }
+  });
+
+  sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
+
+  // ── Initialise: greet with first message ─────────────────────────────────
+  async function init() {
+    showTyping();
+    try {
+      const res = await fetch(`${API_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ web_id: webId, message: 'hello' })
+      });
+      hideTyping();
+
+      if (!res.ok) {
+        appendMessage(
+          '_The shop door creaks but no one answers…_\n\nThe server could not be reached (status ' + res.status + '). Please try again later.',
+          'shopkeeper'
+        );
+        return;
+      }
+
+      const data = await res.json();
+      appendDivider();
+      appendMessage(data.body || 'Welcome, adventurer!', 'shopkeeper', data.media_url || null);
+
+    } catch (_) {
+      hideTyping();
+      appendMessage(
+        '_The shop door creaks but no one answers…_\n\nCould not connect to the server at ' + API_URL + '. Please try again later.',
+        'shopkeeper'
+      );
+    }
+    inputEl.focus();
+  }
+
+  init();
+</script>
+</body>
+</html>
