@@ -346,8 +346,9 @@
 
 <script>
   // ── Configuration ─────────────────────────────────────────────────────────
-  // Change this to match your server address once deployed.
-  const API_URL = 'https://api.rpg-shop.uk';
+  const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5002'
+    : 'https://api.rpg-shop.uk';
 
   // ── Session identity ──────────────────────────────────────────────────────
   function getOrCreateWebId() {
@@ -382,7 +383,12 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
     // Convert _text_ to <em>text</em>
-    return escaped.replace(/_(.*?)_/g, '<em>$1</em>');
+    const italicised = escaped.replace(/_(.*?)_/g, '<em>$1</em>');
+    // Convert bare URLs to clickable links
+    return italicised.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
   }
 
   // ── Append a message bubble ───────────────────────────────────────────────
