@@ -395,7 +395,7 @@
   function formatText(text) {
     // Extract [[id|name]] tokens before HTML escaping to handle names cleanly
     const items = [];
-    const marked = text.replace(/\[\[(\d+)\|([^\]]+)\]\]/g, (_, id, name) => {
+    const marked = text.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, (_, id, name) => {
       const idx = items.length;
       items.push({ id, name });
       return `\x00ITEM${idx}\x00`;
