@@ -46,7 +46,9 @@
       z-index: 1;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100vh;               /* fallback */
+      height: 100dvh;              /* modern: shrinks when mobile browser chrome shows */
+      height: var(--app-height, 100vh); /* JS override for iOS Safari < 15.4 */
       max-width: 680px;
       margin: 0 auto;
       border-left: 1px solid var(--border);
@@ -265,11 +267,49 @@
       transform: rotate(45deg);
     }
 
+    /* ── Suggestion chips ── */
+    .suggestions-bar {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0.45rem 1rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      min-height: 0;
+      transition: padding 0.15s;
+    }
+
+    .suggestions-bar:empty {
+      padding: 0;
+      border-top: none;
+    }
+
+    .suggestion-chip {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      color: var(--gold);
+      background: var(--gold-dim);
+      border: 1px solid rgba(212, 164, 76, 0.25);
+      border-radius: 3px;
+      padding: 0.22rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .suggestion-chip:hover {
+      background: rgba(212, 164, 76, 0.16);
+      border-color: rgba(212, 164, 76, 0.5);
+    }
+
     /* ── Input bar ── */
     .input-bar {
       display: flex;
       gap: 0.6rem;
       padding: 0.85rem 1rem;
+      padding-bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px));
       background: var(--surface);
       border-top: 1px solid var(--border);
       flex-shrink: 0;
@@ -312,10 +352,63 @@
     #send-btn:active { background: rgba(212,164,76,0.22); }
     #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    /* ── Command picker ── */
+    #cmd-picker {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      z-index: 20;
+      overflow: hidden;
+      box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .cmd-picker-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.65rem;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    .cmd-picker-item:last-child { border-bottom: none; }
+
+    .cmd-picker-item:hover,
+    .cmd-picker-item.active {
+      background: var(--gold-dim);
+    }
+
+    .cmd-picker-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      color: var(--gold);
+      white-space: nowrap;
+      min-width: 90px;
+    }
+
+    .cmd-picker-desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 480px) {
       .bubble { font-size: 0.95rem; }
+      .topbar { padding: 0.5rem 0.85rem; }
+      .topbar-avatar { width: 30px; height: 30px; }
       .topbar-name { font-size: 0.72rem; }
+      .topbar-sub { display: none; }
+      .messages { padding: 0.85rem 0.75rem; }
     }
   </style>
 </head>
@@ -345,6 +438,12 @@
   <!-- Messages -->
   <main class="messages" id="messages" aria-live="polite" aria-label="Chat messages"></main>
 
+  <!-- Suggestion chips -->
+  <div class="suggestions-bar" id="suggestions-bar"></div>
+
+  <!-- Slash command picker (shown when input starts with /) -->
+  <div id="cmd-picker" role="listbox" aria-label="Available commands"></div>
+
   <!-- Input -->
   <footer class="input-bar">
     <textarea
@@ -360,6 +459,16 @@
 </div>
 
 <script>
+  // ── Mobile viewport height fix ────────────────────────────────────────────
+  // iOS Safari reports 100vh including hidden browser chrome, so the input bar
+  // ends up off-screen on initial load. We set --app-height from window.innerHeight
+  // which always reflects the true visible area, and re-run on resize/orientation change.
+  function setAppHeight() {
+    document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+
   // ── Configuration ─────────────────────────────────────────────────────────
   const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5002'
@@ -381,13 +490,14 @@
   const webId = getOrCreateWebId();
 
   // ── DOM references ────────────────────────────────────────────────────────
-  const messagesEl  = document.getElementById('messages');
-  const inputEl     = document.getElementById('msg-input');
-  const sendBtn     = document.getElementById('send-btn');
-  const resetBtn    = document.getElementById('btn-reset');
-  const sessionInfo = document.getElementById('session-info');
-  const sessionLabel= document.getElementById('session-label');
-  let   sessionActive = false;
+  const messagesEl     = document.getElementById('messages');
+  const inputEl        = document.getElementById('msg-input');
+  const sendBtn        = document.getElementById('send-btn');
+  const resetBtn       = document.getElementById('btn-reset');
+  const sessionInfo    = document.getElementById('session-info');
+  const sessionLabel   = document.getElementById('session-label');
+  const suggestionsBar = document.getElementById('suggestions-bar');
+  let   sessionActive  = false;
 
   // ── Format shopkeeper text ────────────────────────────────────────────────
   // Renders Discord-style markdown and converts [[id|name]] tokens to
@@ -494,11 +604,56 @@
     if (typingEl) { typingEl.remove(); typingEl = null; }
   }
 
+  // ── Suggestion chips ──────────────────────────────────────────────────────
+  function renderSuggestions(suggestions) {
+    suggestionsBar.innerHTML = '';
+    (suggestions || []).slice(0, 3).forEach(text => {
+      const btn = document.createElement('button');
+      btn.className = 'suggestion-chip';
+      btn.textContent = text;
+      btn.addEventListener('click', () => sendMessage(text));
+      suggestionsBar.appendChild(btn);
+    });
+  }
+
+  // ── Slash command → backend text translation ──────────────────────────────
+  // The web picker inserts "/link", "/help buying" etc. The backend only speaks
+  // plain text, so we map each slash command to what it already understands.
+  function resolveSlashCommand(raw) {
+    if (!raw.startsWith('/')) return { apiText: raw, displayText: raw };
+    const parts = raw.trim().split(/\s+/);
+    const cmd   = parts[0].toLowerCase();
+    const rest  = parts.slice(1).join(' ');
+    const MAP = {
+      '/link':     'link discord',
+      '/unlink':   'unlink discord',
+      '/reset':    'reset',
+      '/logout':   'logout',
+    };
+    if (MAP[cmd]) return { apiText: MAP[cmd], displayText: raw };
+    if (cmd === '/help')     return { apiText: rest ? `help ${rest}`            : 'help',           displayText: raw };
+    if (cmd === '/switch')   return { apiText: rest ? `switch to ${rest}`       : 'switch character', displayText: raw };
+    if (cmd === '/report')   return { apiText: rest ? `bug report ${rest}`      : 'bug report',     displayText: raw };
+    if (cmd === '/feedback')       return { apiText: rest ? `feedback ${rest}`        : 'feedback',       displayText: raw };
+    if (cmd === '/linkdndbeyond') return { apiText: rest ? `link dndbeyond ${rest}` : 'link dndbeyond', displayText: raw };
+    if (cmd === '/dm')             return { apiText: rest ? `dm ${rest}`              : 'dm',             displayText: raw };
+    return { apiText: raw, displayText: raw };
+  }
+
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  function autoResize() {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+  }
+
   // ── Send a message ────────────────────────────────────────────────────────
   async function sendMessage(text, displayText = null) {
     if (!text.trim()) return;
 
-    appendMessage(displayText || text, 'player');
+    const { apiText, displayText: slashDisplay } = resolveSlashCommand(text.trim());
+
+    renderSuggestions([]);   // clear chips while waiting for response
+    appendMessage(displayText || slashDisplay, 'player');
     inputEl.value = '';
     inputEl.style.height = 'auto';
     sendBtn.disabled = true;
@@ -508,7 +663,7 @@
       const res = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ web_id: webId, message: text })
+        body: JSON.stringify({ web_id: webId, message: apiText })
       });
 
       hideTyping();
@@ -520,6 +675,7 @@
 
       const data = await res.json();
       appendMessage(data.body || '…', 'shopkeeper', data.media_url || null);
+      renderSuggestions(data.suggestions);
 
       // Detect when setup is complete (character name mentioned in response)
       if (!sessionActive && data.body && (
@@ -557,10 +713,7 @@
   });
 
   // ── Auto-resize textarea ──────────────────────────────────────────────────
-  inputEl.addEventListener('input', () => {
-    inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
-  });
+  inputEl.addEventListener('input', autoResize);
 
   // ── Send on Enter (Shift+Enter for newline) ───────────────────────────────
   inputEl.addEventListener('keydown', e => {
@@ -598,6 +751,7 @@
       const data = await res.json();
       appendDivider();
       appendMessage(data.body || 'Welcome, adventurer!', 'shopkeeper', data.media_url || null);
+      renderSuggestions(data.suggestions);
 
     } catch (_) {
       hideTyping();
@@ -610,6 +764,153 @@
   }
 
   init();
+
+  // ── Slash command picker ──────────────────────────────────────────────────
+  const cmdPicker   = document.getElementById('cmd-picker');
+  const inputBar    = document.querySelector('.input-bar');
+
+  const SLASH_COMMANDS = [
+    { name: 'help',     description: 'Get help with any feature of the shop',  text: '/help '     },
+    { name: 'switch',   description: 'Switch your active character',            text: '/switch '   },
+    { name: 'link',     description: 'Link your Discord account',               text: '/link'      },
+    { name: 'unlink',   description: 'Unlink your Discord account',             text: '/unlink'    },
+    { name: 'reset',    description: 'Reset your current session',              text: '/reset'     },
+    { name: 'logout',   description: 'Log out of the shop',                     text: '/logout'    },
+    { name: 'report',   description: 'Submit a bug report',                     text: '/report '   },
+    { name: 'feedback',       description: 'Send feedback to the shopkeeper',         text: '/feedback '       },
+    { name: 'linkdndbeyond', description: 'Link your D&D Beyond character sheet',     text: '/linkdndbeyond '  },
+    // DM commands (party owners / DM tier)
+    { name: 'dm add_currency',  description: '(DM) Add currency to party balance',       text: '/dm add_currency '  },
+    { name: 'dm add_item',      description: '(DM) Start guided custom item creation',   text: '/dm add_item'       },
+    { name: 'dm modify_item',   description: '(DM) Start guided item modification',      text: '/dm modify_item '   },
+    { name: 'dm hide_item',     description: '(DM) Hide item from party shop',           text: '/dm hide_item '     },
+    { name: 'dm unhide_item',   description: '(DM) Restore hidden item to shop',         text: '/dm unhide_item '   },
+    { name: 'dm list_hidden',   description: '(DM) List items hidden from shop',         text: '/dm list_hidden'    },
+    { name: 'dm restock',       description: '(DM) Force item stock re-roll',            text: '/dm restock '       },
+    { name: 'dm set_stock',     description: '(DM) Set exact item stock amount',         text: '/dm set_stock '     },
+    { name: 'dm set_limit',     description: '(DM) Set party shop spending limit',       text: '/dm set_limit '     },
+    { name: 'dm set_code',      description: '(DM) Set party access code',               text: '/dm set_code '      },
+    { name: 'dm get_join_code', description: '(DM) Show party join codes',               text: '/dm get_join_code'  },
+    { name: 'dm discount',      description: '(DM) Set party buy/sell discount %',       text: '/dm discount '      },
+    { name: 'dm markup',        description: '(DM) Set party price markup %',            text: '/dm markup '        },
+    { name: 'dm party_face',    description: '(DM) Toggle Party Face (highest CHA)',     text: '/dm party_face '    },
+    { name: 'dm see_users',     description: '(DM) List all party users',                text: '/dm see_users'      },
+    { name: 'dm see_chars',     description: '(DM) List all characters',                 text: '/dm see_chars'      },
+    { name: 'dm invite',        description: '(DM) Invite a member to party',            text: '/dm invite '        },
+    { name: 'dm kick',          description: '(DM) Kick a member from party',            text: '/dm kick '          },
+    { name: 'dm set_mood',      description: '(DM) Set shopkeeper mood (1-20)',          text: '/dm set_mood '      },
+    { name: 'dm set_weather',   description: '(DM) Set weather value (1-20)',            text: '/dm set_weather '   },
+    { name: 'dm reset_mood',    description: '(DM) Reset shopkeeper mood for fresh roll',text: '/dm reset_mood'     },
+    { name: 'dm reset_weather', description: '(DM) Reset weather for fresh roll',        text: '/dm reset_weather'  },
+    { name: 'dm set_date',      description: '(DM) Set Harptos calendar date',           text: '/dm set_date '      },
+  ];
+
+  let pickerActive = false;
+  let pickerIndex  = -1;
+  let pickerItems  = [];
+
+  function _pickerBottom() {
+    return inputBar.offsetHeight + suggestionsBar.offsetHeight;
+  }
+
+  function showPicker(query) {
+    const q = query.toLowerCase();
+    pickerItems = q
+      ? SLASH_COMMANDS.filter(c => c.name.startsWith(q))
+      : SLASH_COMMANDS.slice();
+
+    if (!pickerItems.length) { hidePicker(); return; }
+
+    cmdPicker.innerHTML = pickerItems.map((c, i) =>
+      `<div class="cmd-picker-item" role="option" data-idx="${i}">
+        <span class="cmd-picker-name">/${c.name}</span>
+        <span class="cmd-picker-desc">${c.description}</span>
+      </div>`
+    ).join('');
+
+    cmdPicker.style.bottom = _pickerBottom() + 'px';
+    cmdPicker.style.display = 'block';
+    pickerActive = true;
+    pickerIndex  = -1;
+    _highlightItem(-1);
+  }
+
+  function hidePicker() {
+    cmdPicker.style.display = 'none';
+    pickerActive = false;
+    pickerIndex  = -1;
+    pickerItems  = [];
+  }
+
+  function _highlightItem(idx) {
+    pickerIndex = idx;
+    cmdPicker.querySelectorAll('.cmd-picker-item').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }
+
+  function _selectItem(idx) {
+    const cmd = pickerItems[idx];
+    if (!cmd) return;
+    inputEl.value = cmd.text;
+    inputEl.focus();
+    // Place cursor at end
+    inputEl.setSelectionRange(cmd.text.length, cmd.text.length);
+    hidePicker();
+    autoResize();
+  }
+
+  // Input → show/filter picker when value starts with /
+  inputEl.addEventListener('input', () => {
+    const val = inputEl.value;
+    if (val.startsWith('/')) {
+      showPicker(val.slice(1));
+    } else {
+      hidePicker();
+    }
+  });
+
+  // Keyboard navigation inside the picker
+  inputEl.addEventListener('keydown', e => {
+    if (!pickerActive) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _highlightItem(Math.min(pickerIndex + 1, pickerItems.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _highlightItem(Math.max(pickerIndex - 1, 0));
+    } else if (e.key === 'Tab' || e.key === 'Enter') {
+      if (pickerIndex >= 0) {
+        e.preventDefault();
+        _selectItem(pickerIndex);
+      } else if (e.key === 'Tab' && pickerItems.length) {
+        e.preventDefault();
+        _selectItem(0);
+      }
+      // Enter with no selection falls through to send
+    } else if (e.key === 'Escape') {
+      hidePicker();
+    }
+  });
+
+  // Click to select
+  cmdPicker.addEventListener('mousedown', e => {
+    const item = e.target.closest('.cmd-picker-item');
+    if (item) {
+      e.preventDefault(); // prevent input blur
+      _selectItem(parseInt(item.dataset.idx, 10));
+    }
+  });
+
+  // Hide picker when input loses focus (small delay to allow click events)
+  inputEl.addEventListener('blur', () => {
+    setTimeout(hidePicker, 150);
+  });
+
+  // Reposition picker if window resizes (orientation change on mobile)
+  window.addEventListener('resize', () => {
+    if (pickerActive) cmdPicker.style.bottom = _pickerBottom() + 'px';
+  });
 </script>
 </body>
 </html>
