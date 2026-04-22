@@ -577,7 +577,7 @@
   // buttons. Clicking one submits the item name exactly as if typed.
   messagesEl.addEventListener('click', e => {
     const btn = e.target.closest('.item-link');
-    if (btn) sendMessage(btn.textContent.trim());
+    if (btn) sendMessage(btn.dataset.id);
   });
 
   // ── Initialise: fetch opening greeting without injecting a chat message ──
