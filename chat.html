@@ -194,6 +194,21 @@
       font-style: italic;
     }
 
+    /* Clickable item names in shopkeeper listings */
+    .bubble .item-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      color: var(--gold);
+      text-decoration: underline;
+      text-decoration-color: rgba(212, 164, 76, 0.4);
+      text-underline-offset: 2px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .bubble .item-link:hover { opacity: 0.7; }
+
     /* Item images inside bubbles */
     .bubble-image {
       display: block;
@@ -375,22 +390,41 @@
   let   sessionActive = false;
 
   // ── Format shopkeeper text ────────────────────────────────────────────────
-  // Renders Discord-style markdown so web chat matches Discord output exactly.
+  // Renders Discord-style markdown and converts [[id|name]] tokens to
+  // clickable buttons so web chat matches Discord output exactly.
   function formatText(text) {
-    // Escape HTML entities first so injected content is never interpreted as markup
-    let s = text
+    // Extract [[id|name]] tokens before HTML escaping to handle names cleanly
+    const items = [];
+    const marked = text.replace(/\[\[(\d+)\|([^\]]+)\]\]/g, (_, id, name) => {
+      const idx = items.length;
+      items.push({ id, name });
+      return `\x00ITEM${idx}\x00`;
+    });
+
+    // Escape HTML entities
+    let s = marked
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+
     // **bold** must be matched before *italic* to avoid partial consumption
     s = s.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
     s = s.replace(/\*(.+?)\*/gs,     '<em>$1</em>');
     s = s.replace(/_(.+?)_/gs,       '<em>$1</em>');
+
     // Convert bare URLs to clickable links
     s = s.replace(
       /(https?:\/\/[^\s<]+)/g,
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
+
+    // Restore item buttons (names are individually HTML-escaped)
+    s = s.replace(/\x00ITEM(\d+)\x00/g, (_, idx) => {
+      const { id, name } = items[parseInt(idx, 10)];
+      const safe = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<button class="item-link" data-id="${id}">${safe}</button>`;
+    });
+
     return s;
   }
 
@@ -537,6 +571,14 @@
   });
 
   sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
+
+  // ── Clickable item names ──────────────────────────────────────────────────
+  // [[id|name]] tokens in shopkeeper responses are rendered as .item-link
+  // buttons. Clicking one submits the item name exactly as if typed.
+  messagesEl.addEventListener('click', e => {
+    const btn = e.target.closest('.item-link');
+    if (btn) sendMessage(btn.textContent.trim());
+  });
 
   // ── Initialise: fetch opening greeting without injecting a chat message ──
   async function init() {
