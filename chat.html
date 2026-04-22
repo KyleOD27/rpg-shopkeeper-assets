@@ -495,10 +495,10 @@
   }
 
   // ── Send a message ────────────────────────────────────────────────────────
-  async function sendMessage(text) {
+  async function sendMessage(text, displayText = null) {
     if (!text.trim()) return;
 
-    appendMessage(text, 'player');
+    appendMessage(displayText || text, 'player');
     inputEl.value = '';
     inputEl.style.height = 'auto';
     sendBtn.disabled = true;
@@ -577,7 +577,7 @@
   // buttons. Clicking one submits the item name exactly as if typed.
   messagesEl.addEventListener('click', e => {
     const btn = e.target.closest('.item-link');
-    if (btn) sendMessage(btn.dataset.id);
+    if (btn) sendMessage(btn.dataset.id, btn.textContent.trim());
   });
 
   // ── Initialise: fetch opening greeting without injecting a chat message ──
