@@ -535,15 +535,11 @@
 
   sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
 
-  // ── Initialise: greet with first message ─────────────────────────────────
+  // ── Initialise: fetch opening greeting without injecting a chat message ──
   async function init() {
     showTyping();
     try {
-      const res = await fetch(`${API_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ web_id: webId, message: 'hello' })
-      });
+      const res = await fetch(`${API_URL}/api/greet?web_id=${encodeURIComponent(webId)}`);
       hideTyping();
 
       if (!res.ok) {
