@@ -375,20 +375,23 @@
   let   sessionActive = false;
 
   // ── Format shopkeeper text ────────────────────────────────────────────────
-  // Convert _italic narration_ to <em>narration</em>
+  // Renders Discord-style markdown so web chat matches Discord output exactly.
   function formatText(text) {
-    // Escape HTML
-    const escaped = text
+    // Escape HTML entities first so injected content is never interpreted as markup
+    let s = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    // Convert _text_ to <em>text</em>
-    const italicised = escaped.replace(/_(.*?)_/g, '<em>$1</em>');
+    // **bold** must be matched before *italic* to avoid partial consumption
+    s = s.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/gs,     '<em>$1</em>');
+    s = s.replace(/_(.+?)_/gs,       '<em>$1</em>');
     // Convert bare URLs to clickable links
-    return italicised.replace(
+    s = s.replace(
       /(https?:\/\/[^\s<]+)/g,
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
+    return s;
   }
 
   // ── Append a message bubble ───────────────────────────────────────────────
