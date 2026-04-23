@@ -3,7 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPG Shopkeeper — Web Chat</title>
+
+  <!-- SEO: core identity -->
+  <title>RPG Shop | D&D Shopkeeper NPC &amp; Inventory Manager for Discord</title>
+  <meta name="description" content="Free D&D shopkeeper NPC for Discord &amp; web. Browse 5e weapons, armour, potions and magic items, track party gold, and manage your Dungeons &amp; Dragons inventory.">
+  <meta name="keywords" content="D&D shop, RPG shop, DnD shopkeeper, Dungeons and Dragons, DnD inventory, Discord bot, D&D 5e, NPC shopkeeper, DnD weapons, DnD armor, DnD potions, magic items, party gold tracker, tabletop RPG, TTRPG, adventuring gear, DnD economy, D&D Beyond, DnD discord bot, fantasy shop">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://rpg-shop.uk">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://rpg-shop.uk">
+  <meta property="og:title"       content="RPG Shop | D&D Shopkeeper NPC for Discord">
+  <meta property="og:description" content="Free D&D shopkeeper NPC for Discord &amp; web. Browse 5e weapons, armour, potions and magic items, track party gold, and manage your Dungeons &amp; Dragons inventory.">
+  <meta property="og:image"       content="https://rpg-shop.uk/images/rpg-shopkeeper-profile/swisstransfer_450f5ac8-a984-4dee-8259-6a361dbc7382/Shopkeeper_Kyle_V2_FINAL_HD_TRANSPARENT.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="RPG Shop | D&D Shopkeeper NPC for Discord">
+  <meta name="twitter:description" content="Free D&D shopkeeper NPC for Discord &amp; web. Browse 5e weapons, armour, potions and magic items, track party gold, and manage your Dungeons &amp; Dragons inventory.">
+  <meta name="twitter:image"       content="https://rpg-shop.uk/images/rpg-shopkeeper-profile/swisstransfer_450f5ac8-a984-4dee-8259-6a361dbc7382/Shopkeeper_Kyle_V2_FINAL_HD_TRANSPARENT.png">
+
+  <!-- Structured data: WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "RPG Shop",
+    "alternateName": ["D&D Shop", "RPG Shopkeeper", "DnD Shopkeeper"],
+    "url": "https://rpg-shop.uk",
+    "description": "Free D&D 5e NPC shopkeeper for Discord, web and WhatsApp. Browse and buy weapons, armour, potions and magic items. Track party gold and manage Dungeons & Dragons inventory.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web Browser, Discord",
+    "browserRequirements": "Requires JavaScript",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+    "featureList": [
+      "D&D 5e item shop: weapons, armour, potions, magic items",
+      "Discord bot integration",
+      "Party gold and inventory tracking",
+      "Haggling and bartering with Charisma checks",
+      "D&D Beyond character sheet integration",
+      "Dungeon Master homebrew item creation",
+      "Party stash and personal notes",
+      "Weather and mood system affecting NPC prices"
+    ],
+    "keywords": "D&D shop, RPG shop, DnD inventory, Discord bot, Dungeons and Dragons, NPC shopkeeper, tabletop RPG, TTRPG"
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -401,6 +447,41 @@
       text-overflow: ellipsis;
     }
 
+    /* ── Item autocomplete picker ── */
+    #item-picker {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      z-index: 20;
+      overflow: hidden;
+      box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .item-picker-item {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-picker-item:last-child { border-bottom: none; }
+
+    .item-picker-item:hover,
+    .item-picker-item.active {
+      background: var(--gold-dim);
+      color: var(--gold);
+    }
+
     /* ── Responsive ── */
     @media (max-width: 480px) {
       .bubble { font-size: 0.95rem; }
@@ -410,6 +491,9 @@
       .topbar-sub { display: none; }
       .messages { padding: 0.85rem 0.75rem; }
     }
+
+    /* ── SEO content section (below chat fold, indexed by search crawlers) ── */
+
   </style>
 </head>
 <body>
@@ -444,6 +528,9 @@
   <!-- Slash command picker (shown when input starts with /) -->
   <div id="cmd-picker" role="listbox" aria-label="Available commands"></div>
 
+  <!-- Item autocomplete picker (shown when typing buy/sell/inspect + query) -->
+  <div id="item-picker" role="listbox" aria-label="Item suggestions"></div>
+
   <!-- Input -->
   <footer class="input-bar">
     <textarea
@@ -457,6 +544,7 @@
   </footer>
 
 </div>
+
 
 <script>
   // ── Mobile viewport height fix ────────────────────────────────────────────
@@ -607,7 +695,7 @@
   // ── Suggestion chips ──────────────────────────────────────────────────────
   function renderSuggestions(suggestions) {
     suggestionsBar.innerHTML = '';
-    (suggestions || []).slice(0, 3).forEach(text => {
+    (suggestions || []).slice(0, 4).forEach(text => {
       const btn = document.createElement('button');
       btn.className = 'suggestion-chip';
       btn.textContent = text;
@@ -649,6 +737,7 @@
   // ── Send a message ────────────────────────────────────────────────────────
   async function sendMessage(text, displayText = null) {
     if (!text.trim()) return;
+    hideItemPicker();
 
     const { apiText, displayText: slashDisplay } = resolveSlashCommand(text.trim());
 
@@ -716,10 +805,15 @@
   inputEl.addEventListener('input', autoResize);
 
   // ── Send on Enter (Shift+Enter for newline) ───────────────────────────────
+  // Block send when a picker has a highlighted item — Enter there selects, not sends.
   inputEl.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!sendBtn.disabled) sendMessage(inputEl.value);
+      const pickerHasSelection     = pickerActive     && pickerIndex     >= 0;
+      const itemPickerHasSelection = itemPickerActive && itemPickerIndex >= 0;
+      if (!pickerHasSelection && !itemPickerHasSelection && !sendBtn.disabled) {
+        sendMessage(inputEl.value);
+      }
     }
   });
 
@@ -735,6 +829,7 @@
 
   // ── Initialise: fetch opening greeting without injecting a chat message ──
   async function init() {
+    renderSuggestions(['hello', 'how are you', 'check weather']);
     showTyping();
     try {
       const res = await fetch(`${API_URL}/api/greet?web_id=${encodeURIComponent(webId)}`);
@@ -902,15 +997,125 @@
     }
   });
 
-  // Hide picker when input loses focus (small delay to allow click events)
+  // Hide pickers when input loses focus (small delay to allow click events)
   inputEl.addEventListener('blur', () => {
-    setTimeout(hidePicker, 150);
+    setTimeout(() => { hidePicker(); hideItemPicker(); }, 150);
   });
 
   // Reposition picker if window resizes (orientation change on mobile)
   window.addEventListener('resize', () => {
-    if (pickerActive) cmdPicker.style.bottom = _pickerBottom() + 'px';
+    if (pickerActive)     cmdPicker.style.bottom  = _pickerBottom() + 'px';
+    if (itemPickerActive) itemPicker.style.bottom = _pickerBottom() + 'px';
   });
+
+  // ── Item name autocomplete ────────────────────────────────────────────────
+  const itemPicker = document.getElementById('item-picker');
+
+  // Commands that accept an item name argument
+  const ITEM_CMD_RE = /^((?:buy|purchase|get|sell|offload|inspect|examine|tell me about|info about|info on|search|find|stash|store|unstash|retrieve|restock|hide item|unhide item)\s+)(.{2,})/i;
+
+  let itemFetchTimer   = null;
+  let itemPickerActive = false;
+  let itemPickerIndex  = -1;
+  let itemPickerItems  = [];
+  let itemPickerPrefix = '';
+
+  function _extractItemContext(val) {
+    const m = val.match(ITEM_CMD_RE);
+    return m ? { prefix: m[1], query: m[2] } : null;
+  }
+
+  function showItemPicker(names, prefix) {
+    itemPickerPrefix = prefix;
+    itemPickerItems  = names;
+    itemPicker.innerHTML = names.map((name, i) => {
+      const safe = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<div class="item-picker-item" role="option" data-idx="${i}">${safe}</div>`;
+    }).join('');
+    itemPicker.style.bottom  = _pickerBottom() + 'px';
+    itemPicker.style.display = 'block';
+    itemPickerActive = true;
+    itemPickerIndex  = -1;
+  }
+
+  function hideItemPicker() {
+    itemPicker.style.display = 'none';
+    itemPickerActive = false;
+    itemPickerIndex  = -1;
+    itemPickerItems  = [];
+  }
+
+  function _highlightItemPicker(idx) {
+    itemPickerIndex = idx;
+    itemPicker.querySelectorAll('.item-picker-item').forEach((el, i) =>
+      el.classList.toggle('active', i === idx)
+    );
+  }
+
+  function _selectItemPicker(idx) {
+    const name = itemPickerItems[idx];
+    if (!name) return;
+    inputEl.value = itemPickerPrefix + name;
+    inputEl.focus();
+    inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+    hideItemPicker();
+    autoResize();
+  }
+
+  // Debounced input → fetch suggestions
+  inputEl.addEventListener('input', () => {
+    const val = inputEl.value;
+    if (val.startsWith('/')) { hideItemPicker(); return; }
+    const ctx = _extractItemContext(val);
+    clearTimeout(itemFetchTimer);
+    if (!ctx) { hideItemPicker(); return; }
+    itemFetchTimer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `${API_URL}/api/items/suggest?q=${encodeURIComponent(ctx.query)}&web_id=${encodeURIComponent(webId)}`
+        );
+        if (!res.ok) return;
+        const data  = await res.json();
+        const names = (data.suggestions || []).slice(0, 6);
+        if (names.length) showItemPicker(names, ctx.prefix);
+        else hideItemPicker();
+      } catch (_) { hideItemPicker(); }
+    }, 250);
+  });
+
+  // Keyboard: Arrow/Tab/Escape inside item picker
+  inputEl.addEventListener('keydown', e => {
+    if (!itemPickerActive) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _highlightItemPicker(Math.min(itemPickerIndex + 1, itemPickerItems.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _highlightItemPicker(Math.max(itemPickerIndex - 1, 0));
+    } else if (e.key === 'Tab' || e.key === 'Enter') {
+      if (itemPickerIndex >= 0) {
+        e.preventDefault();
+        _selectItemPicker(itemPickerIndex);
+      } else if (e.key === 'Tab' && itemPickerItems.length) {
+        e.preventDefault();
+        _selectItemPicker(0);
+      }
+      // Enter with nothing highlighted falls through to the send listener
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      hideItemPicker();
+    }
+  });
+
+  // Click to select
+  itemPicker.addEventListener('mousedown', e => {
+    const item = e.target.closest('.item-picker-item');
+    if (item) {
+      e.preventDefault();
+      _selectItemPicker(parseInt(item.dataset.idx, 10));
+    }
+  });
+
 </script>
 </body>
 </html>

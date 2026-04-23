@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About RPG Shop | D&D Shopkeeper NPC for Discord &amp; Web</title>
+  <meta name="description" content="RPG Shop is a free D&D 5e shopkeeper NPC for Discord, web and WhatsApp. Browse weapons, armour, potions and magic items, track party gold, and manage your Dungeons &amp; Dragons inventory.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://rpg-shop.uk/about">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      background-color: #0f0a1a;
+      color: #e8dcc8;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 20%,
+        rgba(100, 50, 140, 0.10) 0%,
+        rgba(60, 30, 90, 0.05) 40%,
+        transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* ── Top nav ── */
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+
+    .back-link {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: #8a7a9e;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: #d4a44c; }
+
+    .chat-link {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: #d4a44c;
+      text-decoration: none;
+      border: 1px solid rgba(212, 164, 76, 0.3);
+      border-radius: 4px;
+      padding: 0.4rem 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .chat-link:hover {
+      background: rgba(212, 164, 76, 0.1);
+      border-color: rgba(212, 164, 76, 0.6);
+    }
+
+    /* ── Header ── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .page-header img {
+      width: 100px;
+      height: auto;
+      margin-bottom: 1.25rem;
+      filter: drop-shadow(0 4px 20px rgba(100, 50, 140, 0.35));
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #d4a44c;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-style: italic;
+      color: #8a7a9e;
+      font-size: 1.05rem;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 2rem 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 164, 76, 0.25), transparent);
+    }
+
+    .divider-gem {
+      width: 6px;
+      height: 6px;
+      background: #d4a44c;
+      transform: rotate(45deg);
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    /* ── Content ── */
+    .content {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #c8bfb0;
+    }
+
+    .content h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #d4a44c;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 2rem 0 0.6rem;
+    }
+
+    .content p { margin-bottom: 0.85rem; }
+
+    .content ul {
+      margin: 0 0 1rem 1.5rem;
+    }
+
+    .content li { margin-bottom: 0.4rem; }
+
+    .content strong { color: #e8dcc8; font-weight: 600; }
+
+    .tagline {
+      margin-top: 3rem;
+      text-align: center;
+      font-style: italic;
+      color: #8a7a9e;
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #3d3154;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 2rem 1.25rem 4rem; }
+      h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <nav class="topnav">
+      <a class="back-link" href="index.html">&larr; Home</a>
+      <a class="chat-link" href="chat.html">Open Shop &rarr;</a>
+    </nav>
+
+    <header class="page-header">
+      <img
+        src="images/rpg-shopkeeper-profile/swisstransfer_450f5ac8-a984-4dee-8259-6a361dbc7382/Shopkeeper_Kyle_V2_FINAL_HD_TRANSPARENT.png"
+        alt="Shopkeeper Kyle"
+      >
+      <h1>RPG Shop</h1>
+      <p class="subtitle">D&amp;D Shopkeeper NPC for Discord &amp; Web</p>
+    </header>
+
+    <div class="divider" aria-hidden="true"><span class="divider-gem"></span></div>
+
+    <div class="content">
+      <p>
+        RPG Shop is a free Dungeons &amp; Dragons 5e shopkeeper NPC for Discord, web, and WhatsApp.
+        Browse and buy weapons, armour, potions, adventuring gear, tools, and magic items —
+        all from the same intelligent NPC who remembers your party, tracks your gold, and reacts
+        to your reputation.
+      </p>
+
+      <h2>Available Items</h2>
+      <p>The full D&amp;D 5e SRD item catalogue, plus homebrew items added by your Dungeon Master:</p>
+      <ul>
+        <li><strong>Weapons</strong> — Simple Melee, Martial Melee, Simple Ranged, Martial Ranged, by property (Finesse, Heavy, Versatile&hellip;), and by weapon type</li>
+        <li><strong>Armour</strong> — Light, Medium, Heavy, Shields</li>
+        <li><strong>Adventuring Gear</strong> — Potions of Healing, Standard Gear, Kits &amp; Packs</li>
+        <li><strong>Tools</strong> — Artisan's Tools, Gaming Sets, Musical Instruments</li>
+        <li><strong>Treasure</strong> — Gemstones, Art Objects, Trade Goods</li>
+        <li><strong>Mounts &amp; Vehicles</strong></li>
+        <li><strong>Magic Items</strong> — Uncommon through Legendary, custom homebrew, +1/+2/+3 variants</li>
+      </ul>
+
+      <h2>Features</h2>
+      <ul>
+        <li><strong>Discord bot</strong> — use the shop directly in your D&amp;D Discord server</li>
+        <li><strong>Party gold tracker</strong> — shared balance and transaction ledger for the whole group</li>
+        <li><strong>Haggling &amp; bartering</strong> — negotiate prices with Charisma checks</li>
+        <li><strong>D&amp;D Beyond integration</strong> — link your character sheet for automatic stat bonuses</li>
+        <li><strong>DM controls</strong> — add homebrew items, set spending limits, hide unavailable items, apply discounts</li>
+        <li><strong>Party stash</strong> — shared item storage separate from the shop inventory</li>
+        <li><strong>Personal notes</strong> — per-character notes accessible across platforms</li>
+        <li><strong>Weather &amp; mood system</strong> — dynamic NPC personality affecting prices and responses</li>
+        <li><strong>Reputation system</strong> — earn better prices through repeat business</li>
+        <li><strong>Character switching</strong> — manage multiple characters and parties</li>
+      </ul>
+
+      <h2>Platforms</h2>
+      <p>
+        RPG Shop works as a <strong>Discord D&amp;D bot</strong>, a web chat at <strong>rpg-shop.uk</strong>,
+        and via <strong>WhatsApp</strong>. All platforms share the same party inventory and gold balance —
+        buy on Discord, check your balance on web, sell on WhatsApp.
+      </p>
+      <p>
+        Ideal for Dungeons &amp; Dragons 5e (D&amp;D 5e), Pathfinder, and any tabletop RPG (TTRPG) group
+        that wants an NPC shopkeeper without the spreadsheet.
+      </p>
+
+      <p class="tagline">Free for all D&amp;D groups &middot; No account needed to browse &middot; TTRPG inventory made easy</p>
+    </div>
+
+    <footer class="footer">rpg-shop.uk</footer>
+  </div>
+</body>
+</html>
