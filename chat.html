@@ -829,7 +829,6 @@
 
   // ── Initialise: fetch opening greeting without injecting a chat message ──
   async function init() {
-    renderSuggestions(['hello', 'how are you', 'check weather']);
     showTyping();
     try {
       const res = await fetch(`${API_URL}/api/greet?web_id=${encodeURIComponent(webId)}`);
