@@ -693,13 +693,21 @@
   }
 
   // ── Suggestion chips ──────────────────────────────────────────────────────
+  // Maps chip label → natural text sent to the backend (label stays readable,
+  // message feels human).
+  const CHIP_SEND_TEXT = {
+    'commiserate': "that sucks",
+    'celebrate':   "that's great to hear",
+  };
+
   function renderSuggestions(suggestions) {
     suggestionsBar.innerHTML = '';
     (suggestions || []).slice(0, 4).forEach(text => {
       const btn = document.createElement('button');
       btn.className = 'suggestion-chip';
       btn.textContent = text;
-      btn.addEventListener('click', () => sendMessage(text));
+      const sendText = CHIP_SEND_TEXT[text.toLowerCase()] ?? text;
+      btn.addEventListener('click', () => sendMessage(sendText));
       suggestionsBar.appendChild(btn);
     });
   }
