@@ -494,6 +494,145 @@
 
     /* ── SEO content section (below chat fold, indexed by search crawlers) ── */
 
+    /* ── Login / Register modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 1rem;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid rgba(212, 164, 76, 0.3);
+      border-radius: 6px;
+      padding: 2rem 2rem 1.5rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.07em;
+    }
+
+    .modal-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      padding: 0.5rem 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: -1px;
+    }
+    .modal-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .modal-pane { display: none; flex-direction: column; gap: 0.75rem; }
+    .modal-pane.active { display: flex; }
+
+    .modal-input {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 1rem;
+      padding: 0.55rem 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .modal-input:focus { border-color: rgba(212,164,76,0.45); }
+    .modal-input::placeholder { color: var(--text-dim); font-style: italic; }
+
+    .modal-submit {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.07em;
+      background: var(--gold-dim);
+      border: 1px solid rgba(212,164,76,0.3);
+      border-radius: 3px;
+      color: var(--gold);
+      padding: 0.65rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+    .modal-submit:hover { background: rgba(212,164,76,0.16); }
+    .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .modal-error {
+      font-size: 0.88rem;
+      color: #e08080;
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    .modal-hint {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.4;
+      margin-top: 0.25rem;
+    }
+
+    .modal-info {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.65rem 0.85rem;
+    }
+    .modal-info code {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.82rem;
+      background: rgba(255,255,255,0.08);
+      padding: 0.3em 0.6em;
+      border-radius: 3px;
+      word-break: break-all;
+      font-family: monospace;
+      letter-spacing: 0.03em;
+    }
+    .modal-back {
+      background: none;
+      border-color: transparent;
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      padding: 0.2rem 0;
+      margin-top: -0.25rem;
+      cursor: pointer;
+    }
+    .modal-back:hover { color: var(--text); background: none; }
+
   </style>
 </head>
 <body>
@@ -543,6 +682,52 @@
     <button id="send-btn">Send</button>
   </footer>
 
+</div>
+
+<!-- ── Login / Register modal ─────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="auth-modal" role="dialog" aria-modal="true" aria-label="Log in or create account">
+  <div class="modal-box">
+    <div class="modal-title">The Adventurer's Emporium</div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-pane="login">Log In</button>
+      <button class="modal-tab"        data-pane="register">New Here?</button>
+      <button class="modal-tab"        data-pane="forgot">Forgot?</button>
+    </div>
+
+    <!-- Login pane -->
+    <form class="modal-pane active" id="modal-login" autocomplete="on" novalidate>
+      <input class="modal-input" id="login-username" type="text"     name="username"         autocomplete="username"         placeholder="Username"      required>
+      <input class="modal-input" id="login-password" type="password" name="password"         autocomplete="current-password" placeholder="Password"      required>
+      <div class="modal-error" id="login-error"></div>
+      <button class="modal-submit" type="submit">Enter the Shop</button>
+      <p class="modal-hint">Forgotten your password? Use the <em>Forgot?</em> tab above.</p>
+    </form>
+
+    <!-- Register pane -->
+    <form class="modal-pane" id="modal-register" autocomplete="on" novalidate>
+      <input class="modal-input" id="reg-username" type="text"     name="username"         autocomplete="username"     placeholder="Choose a username"  required>
+      <input class="modal-input" id="reg-password" type="password" name="new-password"     autocomplete="new-password" placeholder="Choose a password"  required>
+      <input class="modal-input" id="reg-confirm"  type="password" name="confirm-password" autocomplete="new-password" placeholder="Confirm password"   required>
+      <input class="modal-input" id="reg-email"    type="email"    name="email"            autocomplete="email"        placeholder="Email (optional — for password reset)">
+      <div class="modal-error" id="reg-error"></div>
+      <button class="modal-submit" type="submit">Create Account</button>
+      <p class="modal-hint"><em>Character name and party are set up in the chat after this step. You can link this account to a Discord account and D&amp;D Beyond at any time &mdash; just say &ldquo;link discord&rdquo; or &ldquo;link dndbeyond&rdquo; when you&rsquo;re ready.</em></p>
+    </form>
+
+    <!-- Forgot password pane -->
+    <div class="modal-pane" id="modal-forgot">
+      <input class="modal-input" id="forgot-username" type="text" autocomplete="username" placeholder="Your username" required>
+      <div class="modal-error" id="forgot-error"></div>
+      <button class="modal-submit" id="forgot-lookup-btn" type="button">Find My Account</button>
+
+      <div class="modal-info" id="forgot-instructions" style="display:none;"></div>
+      <input class="modal-input" id="forgot-code" type="text" autocomplete="one-time-code" maxlength="8" spellcheck="false" placeholder="Paste code here" style="display:none; text-transform:uppercase; letter-spacing:0.1em;">
+      <div class="modal-error" id="forgot-code-error" style="display:none;"></div>
+      <button class="modal-submit" id="forgot-verify-btn" type="button" style="display:none;">Verify &amp; Log In</button>
+      <button class="modal-submit modal-back" id="forgot-back-btn" type="button" style="display:none;">&#8592; Try a different username</button>
+    </div>
+  </div>
 </div>
 
 
@@ -835,8 +1020,176 @@
     if (btn) sendMessage(btn.dataset.id, btn.textContent.trim());
   });
 
-  // ── Initialise: fetch opening greeting without injecting a chat message ──
-  async function init() {
+  // ── Login / Register modal ───────────────────────────────────────────────
+  const authModal   = document.getElementById('auth-modal');
+  const modalTabs   = authModal.querySelectorAll('.modal-tab');
+  const loginForm   = document.getElementById('modal-login');
+  const registerForm = document.getElementById('modal-register');
+  const loginError  = document.getElementById('login-error');
+  const regError    = document.getElementById('reg-error');
+
+  modalTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      modalTabs.forEach(t => t.classList.remove('active'));
+      authModal.querySelectorAll('.modal-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      authModal.querySelector(`#modal-${tab.dataset.pane}`).classList.add('active');
+      loginError.textContent = '';
+      regError.textContent   = '';
+      resetForgotForm();
+    });
+  });
+
+  function showModal() { authModal.classList.remove('hidden'); }
+  function hideModal() { authModal.classList.add('hidden'); }
+
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    loginError.textContent = '';
+    const btn = loginForm.querySelector('.modal-submit');
+    btn.disabled = true;
+    try {
+      const res  = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('login-username').value.trim(),
+          password: document.getElementById('login-password').value,
+          web_id:   webId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        hideModal();
+        loadGreeting();
+      } else {
+        loginError.textContent = data.error || 'Login failed.';
+      }
+    } catch (_) {
+      loginError.textContent = 'Could not reach the server. Please try again.';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  registerForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    regError.textContent = '';
+    const btn = registerForm.querySelector('.modal-submit');
+    btn.disabled = true;
+    try {
+      const res  = await fetch(`${API_URL}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('reg-username').value.trim(),
+          password: document.getElementById('reg-password').value,
+          confirm:  document.getElementById('reg-confirm').value,
+          email:    document.getElementById('reg-email').value.trim() || null,
+          web_id:   webId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        hideModal();
+        loadGreeting();
+      } else {
+        regError.textContent = data.error || 'Registration failed.';
+      }
+    } catch (_) {
+      regError.textContent = 'Could not reach the server. Please try again.';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ── Forgot password flow ─────────────────────────────────────────────────
+  const forgotUsernameInput = document.getElementById('forgot-username');
+  const forgotError         = document.getElementById('forgot-error');
+  const forgotLookupBtn     = document.getElementById('forgot-lookup-btn');
+  const forgotInstructions  = document.getElementById('forgot-instructions');
+  const forgotCodeInput     = document.getElementById('forgot-code');
+  const forgotCodeError     = document.getElementById('forgot-code-error');
+  const forgotVerifyBtn     = document.getElementById('forgot-verify-btn');
+  const forgotBackBtn       = document.getElementById('forgot-back-btn');
+
+  function resetForgotForm() {
+    forgotUsernameInput.value       = '';
+    forgotError.textContent         = '';
+    forgotCodeInput.value           = '';
+    forgotCodeError.textContent     = '';
+    forgotInstructions.innerHTML    = '';
+    forgotUsernameInput.style.display = '';
+    forgotError.style.display         = '';
+    forgotLookupBtn.style.display     = '';
+    forgotInstructions.style.display  = 'none';
+    forgotCodeInput.style.display     = 'none';
+    forgotCodeError.style.display     = 'none';
+    forgotVerifyBtn.style.display     = 'none';
+    forgotBackBtn.style.display       = 'none';
+  }
+
+  forgotBackBtn.addEventListener('click', resetForgotForm);
+
+  forgotLookupBtn.addEventListener('click', async () => {
+    forgotError.textContent = '';
+    const username = forgotUsernameInput.value.trim();
+    if (!username) { forgotError.textContent = 'Please enter your username.'; return; }
+    forgotLookupBtn.disabled = true;
+    try {
+      const res  = await fetch(`${API_URL}/api/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, web_id: webId }),
+      });
+      const data = await res.json();
+      if (data.error) { forgotError.textContent = data.error; return; }
+      forgotUsernameInput.style.display = 'none';
+      forgotError.style.display         = 'none';
+      forgotLookupBtn.style.display     = 'none';
+      forgotInstructions.innerHTML      = data.message;
+      forgotInstructions.style.display  = '';
+      forgotBackBtn.style.display       = '';
+      if (data.method === 'discord' || data.method === 'whatsapp') {
+        forgotCodeInput.style.display   = '';
+        forgotCodeError.style.display   = '';
+        forgotVerifyBtn.style.display   = '';
+        forgotCodeInput.focus();
+      }
+    } catch (_) {
+      forgotError.textContent = 'Could not reach the server. Please try again.';
+    } finally {
+      forgotLookupBtn.disabled = false;
+    }
+  });
+
+  forgotVerifyBtn.addEventListener('click', async () => {
+    forgotCodeError.textContent = '';
+    const code = forgotCodeInput.value.trim().toUpperCase();
+    if (!code) { forgotCodeError.textContent = 'Please enter the code.'; return; }
+    forgotVerifyBtn.disabled = true;
+    try {
+      const res  = await fetch(`${API_URL}/api/verify-reset-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, web_id: webId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        hideModal();
+        loadGreeting();
+      } else {
+        forgotCodeError.textContent = data.error || 'Invalid code. Check you copied it correctly.';
+      }
+    } catch (_) {
+      forgotCodeError.textContent = 'Could not reach the server. Please try again.';
+    } finally {
+      forgotVerifyBtn.disabled = false;
+    }
+  });
+
+  // ── Initialise: check auth status, show modal or load greeting ───────────
+  async function loadGreeting() {
     showTyping();
     try {
       const res = await fetch(`${API_URL}/api/greet?web_id=${encodeURIComponent(webId)}`);
@@ -863,6 +1216,49 @@
       );
     }
     inputEl.focus();
+  }
+
+  async function init() {
+    // If the page was opened via an email reset link, verify the token first
+    const resetToken = new URLSearchParams(window.location.search).get('reset_token');
+    if (resetToken) {
+      // Strip token from URL bar without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+      try {
+        const res  = await fetch(`${API_URL}/api/verify-reset-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: resetToken, web_id: webId }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadGreeting(); // chat will prompt for new password
+          return;
+        }
+        // Invalid / expired — show modal with error on the forgot tab
+        showModal();
+        modalTabs.forEach(t => { t.classList.remove('active'); });
+        authModal.querySelectorAll('.modal-pane').forEach(p => p.classList.remove('active'));
+        authModal.querySelector('[data-pane="forgot"]').classList.add('active');
+        document.getElementById('modal-forgot').classList.add('active');
+        forgotError.textContent = data.error || 'This reset link is invalid or has expired.';
+        return;
+      } catch (_) { /* fall through to normal auth check */ }
+    }
+
+    try {
+      const res  = await fetch(`${API_URL}/api/auth/status?web_id=${encodeURIComponent(webId)}`);
+      const data = res.ok ? await res.json() : { authenticated: false };
+      if (data.authenticated) {
+        loadGreeting();
+      } else {
+        showModal();
+        document.getElementById('login-username').focus();
+      }
+    } catch (_) {
+      // Server unreachable — fall through to greeting which will show the error
+      loadGreeting();
+    }
   }
 
   init();
