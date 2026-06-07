@@ -1,0 +1,16 @@
+# IDE files
+.idea/
+images/.idea/
+
+# Claude Code local state
+.claude/
+
+# Accidental/temp files
+null
+
+# Large original source files (design assets, not distribution)
+**/*.clip
+
+# Processed image caches (regenerated on demand)
+images/items_original_backup/
+images/items_processed/
