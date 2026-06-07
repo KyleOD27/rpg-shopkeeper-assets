@@ -178,6 +178,45 @@
     }
     .btn-home:hover { color: var(--gold); }
 
+    /* ── Context badges ── */
+    .context-badges {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ctx-badge {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(212, 164, 76, 0.15);
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 15px;
+      color: var(--text-dim);
+      cursor: default;
+      user-select: none;
+      transition: border-color 0.2s;
+    }
+
+    .ctx-badge.known {
+      border-color: rgba(212, 164, 76, 0.28);
+    }
+
+    .ctx-badge[data-type="rep"] {
+      font-size: 10px;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0;
+    }
+
+    @media (max-width: 480px) {
+      .ctx-badge { width: 22px; height: 22px; font-size: 12px; }
+      .ctx-badge[data-type="rep"] { font-size: 9px; }
+      .session-info { display: none !important; }
+    }
+
     /* ── Message area ── */
     .messages {
       flex: 1;
@@ -651,6 +690,12 @@
         <div class="topbar-sub" id="session-label">Web Chat</div>
       </div>
     </div>
+    <div class="context-badges" id="context-badges">
+      <div class="ctx-badge" id="ctx-season"  data-type="season"  title="Season">?</div>
+      <div class="ctx-badge" id="ctx-weather" data-type="weather" title="Weather (ask to reveal)">?</div>
+      <div class="ctx-badge" id="ctx-rep"     data-type="rep"     title="Reputation (ask to reveal)">?</div>
+      <div class="ctx-badge" id="ctx-mood"    data-type="mood"    title="Mood (ask to reveal)">?</div>
+    </div>
     <div class="topbar-right">
       <span class="session-info" id="session-info"></span>
       <button class="btn-reset" id="btn-reset" title="Reset session">Reset</button>
@@ -897,6 +942,70 @@
     });
   }
 
+  // ── Context badges ────────────────────────────────────────────────────────
+  const SEASON_EMOJI  = { spring: '🌸', summer: '🌳', autumn: '🍂', winter: '❄️' };
+  const WEATHER_EMOJI = { sunny: '☀️', clear: '☀️', partly_cloudy: '⛅', cloudy: '☁️', overcast: '☁️', rainy: '🌧️', stormy: '⛈️', snowy: '🌨️', foggy: '🌫️', windy: '💨' };
+  const MOOD_EMOJI    = { happy: '😊', cheerful: '😊', joyful: '😄', excited: '😄', neutral: '😐', content: '🙂', grumpy: '😠', irritable: '😠', angry: '😡', suspicious: '🤨', wary: '🤨', melancholy: '😔', sad: '😔' };
+
+  function currentSeason() {
+    const m = new Date().getMonth() + 1;
+    if (m >= 3 && m <= 5) return 'spring';
+    if (m >= 6 && m <= 8) return 'summer';
+    if (m >= 9 && m <= 11) return 'autumn';
+    return 'winter';
+  }
+
+  function repColor(rep) {
+    if (rep > 65) return '#4caf50';
+    if (rep > 35) return '#d4a44c';
+    return '#e53935';
+  }
+
+  function updateContextBadges(data) {
+    const seasonEl  = document.getElementById('ctx-season');
+    const weatherEl = document.getElementById('ctx-weather');
+    const repEl     = document.getElementById('ctx-rep');
+    const moodEl    = document.getElementById('ctx-mood');
+
+    // Season — always shown, derived client-side (server can override via data.season)
+    const season = (data && data.season) || currentSeason();
+    seasonEl.textContent = SEASON_EMOJI[season] || '🌳';
+    seasonEl.title = 'Season: ' + season;
+    seasonEl.classList.add('known');
+
+    // Weather
+    if (data && data.weather) {
+      weatherEl.textContent = WEATHER_EMOJI[data.weather] || data.weather;
+      weatherEl.title = 'Weather: ' + data.weather;
+      weatherEl.classList.add('known');
+    }
+
+    // Reputation
+    if (data && data.reputation != null) {
+      repEl.textContent  = data.reputation;
+      repEl.style.color  = repColor(data.reputation);
+      repEl.title        = 'Reputation: ' + data.reputation;
+      repEl.classList.add('known');
+    }
+
+    // Mood
+    if (data && data.mood) {
+      moodEl.textContent = MOOD_EMOJI[data.mood] || data.mood;
+      moodEl.title       = 'Mood: ' + data.mood;
+      moodEl.classList.add('known');
+    }
+  }
+
+  async function fetchContext() {
+    try {
+      const res = await fetch(`${API_URL}/api/context?web_id=${encodeURIComponent(webId)}`);
+      if (res.ok) updateContextBadges(await res.json());
+    } catch (_) {}
+  }
+
+  // Show season immediately — no API call needed
+  updateContextBadges(null);
+
   // ── Slash command → backend text translation ──────────────────────────────
   // The web picker inserts "/link", "/help buying" etc. The backend only speaks
   // plain text, so we map each slash command to what it already understands.
@@ -958,6 +1067,7 @@
       const data = await res.json();
       appendMessage(data.body || '…', 'shopkeeper', data.media_url || null);
       renderSuggestions(data.suggestions);
+      fetchContext();
 
       // Detect when setup is complete (character name mentioned in response)
       if (!sessionActive && data.body && (
@@ -1207,6 +1317,7 @@
       appendDivider();
       appendMessage(data.body || 'Welcome, adventurer!', 'shopkeeper', data.media_url || null);
       renderSuggestions(data.suggestions);
+      fetchContext();
 
     } catch (_) {
       hideTyping();
