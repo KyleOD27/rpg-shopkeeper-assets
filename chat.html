@@ -178,6 +178,32 @@
     }
     .btn-home:hover { color: var(--gold); }
 
+    /* ── Harptos date strip ── */
+    .harptos-date-bar {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.3rem 1.25rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .harptos-date-bar.visible { display: flex; }
+    .harptos-date-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.3;
+    }
+    .harptos-date-text {
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.09em;
+      color: var(--gold);
+      opacity: 0.85;
+      white-space: nowrap;
+    }
+
     /* ── Context badges ── */
     .context-badges {
       display: flex;
@@ -703,6 +729,13 @@
     </div>
   </header>
 
+  <!-- Harptos date strip -->
+  <div class="harptos-date-bar" id="harptos-date-bar">
+    <div class="harptos-date-line"></div>
+    <span class="harptos-date-text" id="harptos-date-text"></span>
+    <div class="harptos-date-line"></div>
+  </div>
+
   <!-- Messages -->
   <main class="messages" id="messages" aria-live="polite" aria-label="Chat messages"></main>
 
@@ -993,6 +1026,12 @@
       moodEl.textContent = MOOD_EMOJI[data.mood] || data.mood;
       moodEl.title       = 'Mood: ' + data.mood;
       moodEl.classList.add('known');
+    }
+
+    // Harptos date
+    if (data && data.harptos_date) {
+      document.getElementById('harptos-date-text').textContent = data.harptos_date;
+      document.getElementById('harptos-date-bar').classList.add('visible');
     }
   }
 
