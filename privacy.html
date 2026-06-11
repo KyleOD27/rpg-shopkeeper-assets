@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | RPG Shop</title>
+  <meta name="description" content="Privacy policy for RPG Shop — the D&amp;D shopkeeper NPC available on Discord, web, WhatsApp, and Android.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://rpg-shop.uk/privacy">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      background-color: #0f0a1a;
+      color: #e8dcc8;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 20%,
+        rgba(100, 50, 140, 0.10) 0%,
+        rgba(60, 30, 90, 0.05) 40%,
+        transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* ── Top nav ── */
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+
+    .back-link {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: #8a7a9e;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: #d4a44c; }
+
+    .chat-link {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: #d4a44c;
+      text-decoration: none;
+      border: 1px solid rgba(212, 164, 76, 0.3);
+      border-radius: 4px;
+      padding: 0.4rem 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .chat-link:hover {
+      background: rgba(212, 164, 76, 0.1);
+      border-color: rgba(212, 164, 76, 0.6);
+    }
+
+    /* ── Header ── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #d4a44c;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-style: italic;
+      color: #8a7a9e;
+      font-size: 1.05rem;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 2rem 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 164, 76, 0.25), transparent);
+    }
+
+    .divider-gem {
+      width: 6px;
+      height: 6px;
+      background: #d4a44c;
+      transform: rotate(45deg);
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    /* ── Content ── */
+    .content {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #c8bfb0;
+    }
+
+    .content h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #d4a44c;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 2rem 0 0.6rem;
+    }
+
+    .content p { margin-bottom: 0.85rem; }
+
+    .content ul {
+      margin: 0 0 1rem 1.5rem;
+    }
+
+    .content li { margin-bottom: 0.4rem; }
+
+    .content strong { color: #e8dcc8; font-weight: 600; }
+
+    .content a {
+      color: #d4a44c;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(212, 164, 76, 0.3);
+      transition: border-color 0.2s;
+    }
+
+    .content a:hover { border-color: #d4a44c; }
+
+    .effective-date {
+      font-style: italic;
+      color: #8a7a9e;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #3d3154;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 2rem 1.25rem 4rem; }
+      h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <nav class="topnav">
+      <a class="back-link" href="index.html">&larr; Home</a>
+      <a class="chat-link" href="chat.html">Open Shop &rarr;</a>
+    </nav>
+
+    <header class="page-header">
+      <h1>Privacy Policy</h1>
+      <p class="subtitle">RPG Shop &mdash; rpg-shop.uk</p>
+    </header>
+
+    <div class="divider" aria-hidden="true"><span class="divider-gem"></span></div>
+
+    <div class="content">
+
+      <p class="effective-date">Effective date: 11 June 2025</p>
+
+      <p>
+        This Privacy Policy explains how RPG Shop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) collects,
+        uses, and stores information when you use our services &mdash; including the website at
+        <strong>rpg-shop.uk</strong>, the Android app (<em>The Adventurer&rsquo;s Emporium</em>),
+        the Discord bot, and the WhatsApp integration.
+      </p>
+
+      <h2>1. Who We Are</h2>
+      <p>
+        RPG Shop is an independent project providing a free D&amp;D 5e shopkeeper NPC for tabletop
+        roleplaying groups. We are based in the United Kingdom and this policy is written in
+        compliance with the UK General Data Protection Regulation (UK GDPR).
+      </p>
+      <p>
+        For any privacy enquiries, contact us at:
+        <a href="mailto:kj.od27@gmail.com">kj.od27@gmail.com</a>
+      </p>
+
+      <h2>2. What We Collect</h2>
+      <p>We collect only what is necessary to provide the service.</p>
+
+      <p><strong>Account information</strong></p>
+      <ul>
+        <li>Username (required)</li>
+        <li>Password &mdash; stored as a one-way hash; we cannot read your password</li>
+        <li>Email address (optional &mdash; used only for password recovery)</li>
+      </ul>
+
+      <p><strong>Platform identifiers</strong></p>
+      <ul>
+        <li>Discord user ID &mdash; if you link your Discord account</li>
+        <li>WhatsApp phone number &mdash; if you use the WhatsApp integration</li>
+      </ul>
+
+      <p><strong>Game data</strong></p>
+      <ul>
+        <li>Character names, party names, and party gold balance</li>
+        <li>Item purchase and sale history (transaction ledger)</li>
+        <li>D&amp;D Beyond character sheet data &mdash; only if you choose to link your sheet</li>
+        <li>Personal notes you choose to save</li>
+        <li>Shopping basket contents</li>
+      </ul>
+
+      <p><strong>Conversation data</strong></p>
+      <ul>
+        <li>Messages you send to the shopkeeper, logged to maintain conversation context</li>
+        <li>Session state (e.g. pending confirmations, active intent)</li>
+      </ul>
+
+      <p><strong>Bug reports and feedback</strong></p>
+      <ul>
+        <li>Text you submit via the <code>/report</code> or <code>/feedback</code> commands</li>
+      </ul>
+
+      <p><strong>Technical data</strong></p>
+      <ul>
+        <li>An anonymous web session identifier stored locally on your device (no cookies sent to third parties)</li>
+      </ul>
+
+      <h2>3. How We Use Your Data</h2>
+      <ul>
+        <li>To authenticate you and maintain your account</li>
+        <li>To operate the shopkeeper service &mdash; tracking gold, inventory, and game state</li>
+        <li>To send password reset codes via Discord or WhatsApp when requested</li>
+        <li>To investigate bug reports and improve the service</li>
+        <li>To maintain the conversation context that makes the shopkeeper feel coherent</li>
+      </ul>
+      <p>We do not use your data for advertising, profiling, or any commercial purpose.</p>
+
+      <h2>4. How We Share Your Data</h2>
+      <p>
+        We do not sell, rent, or share your personal data with third parties, with the
+        following narrow exceptions:
+      </p>
+      <ul>
+        <li>
+          <strong>Discord</strong> &mdash; messages are delivered via the Discord API when you use the bot.
+          Discord&rsquo;s own privacy policy applies to their platform.
+        </li>
+        <li>
+          <strong>Twilio / WhatsApp</strong> &mdash; messages are delivered via Twilio&rsquo;s API when you use
+          the WhatsApp integration. Twilio&rsquo;s and Meta&rsquo;s privacy policies apply.
+        </li>
+        <li>
+          <strong>D&amp;D Beyond</strong> &mdash; if you choose to link your character sheet, we fetch
+          character data from D&amp;D Beyond on your request.
+        </li>
+      </ul>
+      <p>All other data remains on our own servers and is not disclosed to any other party.</p>
+
+      <h2>5. Data Retention</h2>
+      <p>
+        Your account and game data are retained for as long as your account is active.
+        Conversation logs are kept to maintain continuity of service. If you delete your account
+        (see below), all personal data associated with it is permanently removed.
+      </p>
+
+      <h2>6. Your Rights</h2>
+      <p>Under UK GDPR you have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> &mdash; request a copy of the data we hold about you</li>
+        <li><strong>Rectification</strong> &mdash; ask us to correct inaccurate data</li>
+        <li><strong>Erasure</strong> &mdash; ask us to delete your account and all associated data</li>
+        <li><strong>Restriction</strong> &mdash; ask us to limit how we process your data</li>
+        <li><strong>Portability</strong> &mdash; request your data in a machine-readable format</li>
+        <li><strong>Object</strong> &mdash; object to processing in certain circumstances</li>
+      </ul>
+      <p>
+        To exercise any of these rights, email us at
+        <a href="mailto:kj.od27@gmail.com">kj.od27@gmail.com</a>.
+        We will respond within 30 days.
+      </p>
+      <p>
+        You also have the right to lodge a complaint with the
+        <a href="https://ico.org.uk" target="_blank" rel="noopener">Information Commissioner&rsquo;s Office (ICO)</a>.
+      </p>
+
+      <h2>7. Children</h2>
+      <p>
+        RPG Shop is not directed at children under the age of 13. We do not knowingly collect
+        personal data from children. If you believe a child has provided us with personal data,
+        please contact us and we will delete it promptly.
+      </p>
+
+      <h2>8. Security</h2>
+      <p>
+        Passwords are stored using one-way hashing. Session identifiers are randomly generated UUIDs.
+        We take reasonable technical measures to protect your data, though no internet service
+        can guarantee absolute security.
+      </p>
+
+      <h2>9. Changes to This Policy</h2>
+      <p>
+        If we make material changes to this policy, we will update the effective date at the top
+        of this page. Continued use of the service after changes are posted constitutes acceptance
+        of the updated policy.
+      </p>
+
+    </div>
+
+    <footer class="footer">rpg-shop.uk</footer>
+  </div>
+</body>
+</html>
