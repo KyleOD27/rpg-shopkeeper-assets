@@ -854,6 +854,9 @@
   // Renders Discord-style markdown and converts [[id|name]] tokens to
   // clickable buttons so web chat matches Discord output exactly.
   function formatText(text) {
+    // Strip Flutter-only sticky note markers — web renders content as plain text
+    text = text.replace(/\[STICKY\]\n?/g, '').replace(/\n?\[\/STICKY\]/g, '');
+
     // Extract [[id|name]] tokens before HTML escaping to handle names cleanly
     const items = [];
     const marked = text.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, (_, id, name) => {
@@ -1369,6 +1372,33 @@
   }
 
   async function init() {
+    // If the page was opened via a shopkeeper code link (Discord/WhatsApp), verify it first
+    const linkCode = new URLSearchParams(window.location.search).get('code');
+    if (linkCode) {
+      // Strip code from URL bar without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+      try {
+        const res  = await fetch(`${API_URL}/api/verify-reset-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: linkCode.trim().toUpperCase(), web_id: webId }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadGreeting(); // chat will prompt for new password
+          return;
+        }
+        // Invalid / expired — show modal with error on the forgot tab
+        showModal();
+        modalTabs.forEach(t => { t.classList.remove('active'); });
+        authModal.querySelectorAll('.modal-pane').forEach(p => p.classList.remove('active'));
+        authModal.querySelector('[data-pane="forgot"]').classList.add('active');
+        document.getElementById('modal-forgot').classList.add('active');
+        forgotError.textContent = data.error || 'This code is invalid or has expired. Ask the shopkeeper for a fresh one.';
+        return;
+      } catch (_) { /* fall through to normal auth check */ }
+    }
+
     // If the page was opened via an email reset link, verify the token first
     const resetToken = new URLSearchParams(window.location.search).get('reset_token');
     if (resetToken) {
