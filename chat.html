@@ -823,7 +823,18 @@
   // ── Configuration ─────────────────────────────────────────────────────────
   const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5002'
-    : 'https://api.rpg-shop.uk';
+    : 'https://patient-cheerful-oryx.ngrok-free.app';
+
+  // Backend is tunneled through ngrok's free tier, which shows an interstitial
+  // "you're about to visit..." warning page to browser traffic unless this
+  // header is present. Harmless no-op against a non-ngrok backend.
+  const _fetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    if (typeof input === 'string' && input.startsWith(API_URL)) {
+      init = { ...init, headers: { ...(init.headers || {}), 'ngrok-skip-browser-warning': 'true' } };
+    }
+    return _fetch(input, init);
+  };
 
   // ── Session identity ──────────────────────────────────────────────────────
   function getOrCreateWebId() {
